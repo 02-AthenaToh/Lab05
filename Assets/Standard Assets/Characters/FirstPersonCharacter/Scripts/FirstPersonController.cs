@@ -44,10 +44,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
-        // score //
+        // coins and score //
         private int coinCount;
-        public int totalCoin;
-        public Text coinCollected;
+        public float totalCoins;
+
+        private float scoreValue;
+        public Text scoreText;
+
+        // time //
+        public float timeLeft;
+        public float timeRemaining;
+        public Text timerText;
+
+        private float TimerValue;
 
         // Use this for initialization
         private void Start()
@@ -64,7 +73,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 			m_MouseLook.Init(transform , m_Camera.transform);
 
             // find game objects tagged coin //
-            totalCoin = GameObject.FindGameObjectsWithTag("Coin").Length;
+            totalCoins = GameObject.FindGameObjectsWithTag("Coin").Length;
         }
 
 
@@ -95,6 +104,26 @@ namespace UnityStandardAssets.Characters.FirstPerson
             // player loses game upon falling into water //
 
             if (transform.position.y < -5)
+            {
+                SceneManager.LoadScene("GameLose");
+            }
+
+            // Start timer //
+            timeLeft += Time.deltaTime;
+
+            timeRemaining = Mathf.FloorToInt(timeLeft % 60);
+
+            timerText.text = "Timer: " + timeRemaining.ToString();
+
+            if (scoreValue == totalCoins)
+            {
+                if (timeLeft <= TimerValue)
+                {
+                    SceneManager.LoadScene("GameWin");
+                }
+            }
+
+            else if (timeLeft <= 0)
             {
                 SceneManager.LoadScene("GameLose");
             }
@@ -280,14 +309,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (other.gameObject.tag == "Coin")
             {
                 coinCount++;
-                coinCollected.GetComponent<Text>().text = "Score: " + coinCount;
+                scoreText.GetComponent<Text>().text = "Score: " + coinCount;
                 Destroy(other.gameObject);
 
-                if (coinCount == totalCoin)
+                if (coinCount == totalCoins)
                 {
                     SceneManager.LoadScene("GameWin");
                 }
-
             }
         }
     }
