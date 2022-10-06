@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using UnityStandardAssets.CrossPlatformInput;
 using UnityStandardAssets.Utility;
 using Random = UnityEngine.Random;
@@ -42,6 +44,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private bool m_Jumping;
         private AudioSource m_AudioSource;
 
+        // score //
+        private int coinCount;
+        public int totalCoin;
+        public Text coinCollected;
+
         // Use this for initialization
         private void Start()
         {
@@ -55,6 +62,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_Jumping = false;
             m_AudioSource = GetComponent<AudioSource>();
 			m_MouseLook.Init(transform , m_Camera.transform);
+
+            // find game objects tagged coin //
+            totalCoin = GameObject.FindGameObjectsWithTag("Coin").Length;
         }
 
 
@@ -81,6 +91,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
 
             m_PreviouslyGrounded = m_CharacterController.isGrounded;
+
+            // player loses game upon falling into water //
+
+            if (transform.position.y < -5)
+            {
+                SceneManager.LoadScene("GameLose");
+            }
         }
 
 
@@ -254,6 +271,24 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 return;
             }
             body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
+        }
+
+        // code to trigger coin collecting collision //
+
+        private void OnTriggerEnter (Collider other)
+        {
+            if (other.gameObject.tag == "Coin")
+            {
+                coinCount++;
+                coinCollected.GetComponent<Text>().text = "Score: " + coinCount;
+                Destroy(other.gameObject);
+
+                if (coinCount == totalCoin)
+                {
+                    SceneManager.LoadScene("GameWin");
+                }
+
+            }
         }
     }
 }
